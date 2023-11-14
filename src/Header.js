@@ -1,15 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+
 function Header({ loggedInUser }) {
-  const history = useNavigate();
+  const navigate = useNavigate();
+
+  const [user, setUser] = useState(loggedInUser);
+
+  useEffect(() => {
+    setUser(loggedInUser);
+  }, [loggedInUser]);
 
   const handleLogout = () => {
     // Perform logout logic (e.g., clear user data from localStorage)
     localStorage.removeItem('loggedInUser');
-    history('/');
+    setUser(null);
+    
+    navigate('/');
+    window.location.reload();
   };
-
   return (
     <header className="bg-purple-500 py-4">
       <nav className="container mx-auto flex items-center justify-between">
@@ -18,16 +27,16 @@ function Header({ loggedInUser }) {
           {/* Home link always visible */}
           <li><Link to="/" className="text-white hover:text-purple-300">Home</Link></li>
           {/* Display profile and log-out button if the user is logged in */}
-          {loggedInUser && (
+          {user && (
             <>
               <li>
                 <Link to="/profile" className="text-white hover:text-purple-300">
                   <img
-                    src={loggedInUser.profilePicture || 'default-profile-pic.jpg'}
+                    src={user.profilePicture || 'default-profile-pic.jpg'}
                     alt="Profile"
                     className="w-8 h-8 rounded-full object-cover"
                   />
-                  Hi, {loggedInUser.firstName}
+                  Hi, {user.firstName}
                 </Link>
               </li>
               <li>

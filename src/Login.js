@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const navigate = useNavigate();
+  
   const [loginData, setLoginData] = useState({
     email: '',
     password: '',
@@ -30,8 +31,12 @@ function Login() {
       // Successful login
       setLoginError(null);
       localStorage.setItem('loggedInUser', JSON.stringify(foundUser));
+      
       console.log('Login successful for user:', loginData.email);
-      navigate('/');
+      
+      navigate('/profile');
+      window.location.reload();
+      
     } else {
       // Invalid credentials
       setLoginError('Invalid email or password');

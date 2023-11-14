@@ -25,6 +25,9 @@ function Profile({ loggedInUser }) {
     const storedUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
     const updatedUsers = storedUsers.map((u) => (u.email === loggedInUser.email ? userProfile : u));
     localStorage.setItem('registeredUsers', JSON.stringify(updatedUsers));
+    
+    
+    window.location.reload();
     setEditMode(false);
   };
 
