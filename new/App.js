@@ -9,27 +9,7 @@ import Footer from './Footer';
 import MessageDetail from './MessageDetail';
 import AdminPanel from './AdminPanel';
 
-function App() {
-   // Check if the admin user is already present in registeredUsers
-   const storedUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-   const isAdminPresent = storedUsers.some(user => user.role==='admin');
- 
-   // If the admin user is not present, add them to registeredUsers
-   if (!isAdminPresent) {
-     const adminUser = {
-       email: 'admin@bvwa.net',
-       nickname: 'bruh224',
-       password: 'adm1ni$tratoR',
-       firstName: 'Admin',
-       lastName: 'User',
-       role: 'admin'
-       // Add other properties as needed
-     };
- 
-     storedUsers.push(adminUser);
-     localStorage.setItem('registeredUsers', JSON.stringify(storedUsers));     
-   }
- 
+function App() {   
    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
 
   return (
@@ -39,8 +19,8 @@ function App() {
         <Routes>
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile loggedInUser={loggedInUser} />} />
-	        <Route path="/messages" element={<MessageDetail loggedInUser={loggedInUser}/>}/>
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/messages" element={<MessageDetail/>} loggedInUser={loggedInUser}/>
           <Route path="/" element={<Home loggedInUser={loggedInUser} />} />
         </Routes>
         <Footer />

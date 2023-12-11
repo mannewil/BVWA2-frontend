@@ -5,6 +5,7 @@ function AdminPanel() {
   const [users, setUsers] = useState(JSON.parse(sessionStorage.getItem('registeredUsers')) || []);
   const [bannedUsers, setBannedUsers] = useState(JSON.parse(sessionStorage.getItem('bannedUsers')) || []);
   const [selectedUser, setSelectedUser] = useState(null);
+  const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;  
 
   useEffect(() => {
     const storedUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
@@ -25,6 +26,17 @@ function AdminPanel() {
       return updatedUsers;
     });
   };
+
+  // Check if the logged-in user is an admin
+  if (!loggedInUser || loggedInUser.role !== 'admin') {
+    // Redirect or show a message for non-admin users
+    return (
+      <div className="max-w-md mx-auto mt-10 p-8 bg-white rounded-lg shadow-lg">
+        <h1 className="text-3xl font-semibold mb-4">Panel Adminu</h1>
+        <p className="text-red-500">Přístup odepřen. Pouze pro adminy.</p>
+      </div>
+    );
+  }
   
   const handleUnbanUser = (email) => {
     setBannedUsers((prevBannedUsers) => {
@@ -68,16 +80,16 @@ function AdminPanel() {
 
   return (
     <div className="max-w-md mx-auto mt-10 p-8 bg-white rounded-lg shadow-lg">
-      <h1 className="text-3xl font-semibold mb-4">Admin Panel</h1>
+      <h1 className="text-3xl font-semibold mb-4">Panel Adminu</h1>
 
       {/* Display active users */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Active Users</h2>
+        <h2 className="text-xl font-semibold mb-2">Uživatele</h2>
         <ul>
           {users.map(user => (
             <li key={user.email} className="flex items-center justify-between border-b py-2">
               <div>{user.email}
-              {user.isAdmin && <span className="ml-2 text-sm text-green-500">Admin</span>}
+              {user.role === 'admin' && <span className="ml-2 text-sm text-green-500">Admin</span>}
               </div>
               <div>
                 <button
@@ -90,7 +102,7 @@ function AdminPanel() {
                   onClick={() => handleEmulateUser(user.email)}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-full"
                 >
-                  Emulate
+                  Zemulovat
                 </button>
                 <button
         onClick={() => handleToggleAdmin(user.email)}
@@ -103,32 +115,11 @@ function AdminPanel() {
             </li>
           ))}
         </ul>
-      </div>
-
-      {/* Display banned users */}
-      <div>
-        <h2 className="text-xl font-semibold mb-2">Banned Users</h2>
-        <ul>
-          {bannedUsers.map(user => (
-            <li key={user.email} className="flex items-center justify-between border-b py-2">
-              <div className="italic text-red-500">{user.email} (Banned)</div>
-              <div>
-                <button
-                  onClick={() => handleUnbanUser(user.email)}
-                  className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded-full mr-2"
-                >
-                  Unban
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-
+      </div>      
       {/* Emulated Profile Form */}
       {selectedUser && (
         <div className="mt-6">
-          <h2 className="text-xl font-semibold mb-2">Emulated User Profile</h2>
+          <h2 className="text-xl font-semibold mb-2">Zemulováný profil uživatele</h2>
           <ProfileForm
             user={selectedUser}
             onSave={handleSaveEmulatedProfile}

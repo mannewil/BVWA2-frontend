@@ -1,27 +1,29 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import InputValidator from './InputValidator'; // Import the utility
+import InputValidator from './InputValidator';
+import API_URLS from './config';
 
 function Register() {
   const navigate = useNavigate();
   const [userProfile, setUserProfile] = useState({
+    email: '',
+    password: '',
     firstName: '',
     lastName: '',
-    email: '',
-    nickname: '',        
-    role: 'user',   
     phoneNumber: '',    
     confirmPassword: '',
     dateOfBirth: null,
     profilePicture: null,
-    password: ''
+    role: 'user',
+    nickname: ''
   });
 
   const [passwordError, setPasswordError] = useState(null);
   const [phoneNumberError, setPhoneNumberError] = useState(null);
   const [emailError, setEmailError] = useState(null);
+  const [usernameError, setUsernameError] = useState(null); // Added state for username error
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
 
     // Validate password
@@ -44,18 +46,52 @@ function Register() {
       return;
     }
 
-    // Registration logic here
-    const storedUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-    const isUserExists = storedUsers.some((u) => u.nickname === userProfile.nickname);
+    // Check username availability
+    const isUsernameAvailable = await checkUsernameAvailability(userProfile.nickname);
+    
+    if (!isUsernameAvailable) {
+      setUsernameError('Username is already taken. Please choose another.');
+      return;
+    }
 
-    if (!isUserExists) {
-      storedUsers.push(userProfile);
-      localStorage.setItem('registeredUsers', JSON.stringify(storedUsers));    
-      navigate('/'); // Redirect to home/login page after registration
-      window.location.reload();
-    } else {
-      // Display error if user already exists
-      alert('Uživatel s tímto loginem jíž existuje.');
+    try {
+      const response = await fetch(API_URLS.REGISTER_USER, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: userProfile.email,
+          password: userProfile.password,
+          firstName: userProfile.firstName,
+          lastName: userProfile.lastName,
+          phoneNumber: userProfile.phoneNumber,
+          role: userProfile.role,
+          nickname: userProfile.nickname,     
+        }),
+      });
+
+      if (response.ok) {
+        navigate('/');
+        window.location.reload();
+      } else {
+        const data = await response.json();
+        alert(`Registration failed: ${data.message}`);
+      }
+    } catch (error) {
+      console.error('Error during registration:', error);
+    }
+  };
+
+  const checkUsernameAvailability = async (username) => {
+    try {
+      const response = await fetch(`${API_URLS.CHECK_USERNAME}?username=${encodeURIComponent(username)}`);
+      const result = await response.text();
+
+      return result === '1'; // If result is '1', username is available
+    } catch (error) {
+      console.error('Error checking username availability:', error);
+      return false; // Default to false if there's an error
     }
   };
 
@@ -66,7 +102,7 @@ function Register() {
 
   return (
     <div className="max-w-md mx-auto mt-10 p-8 bg-white rounded-lg shadow-lg">
-      <h1 className="text-3xl font-semibold text-center mb-4">Registrace</h1>
+      <h1 className="text-3xl font-semibold text-center mb-4">Register</h1>
       <form onSubmit={handleFormSubmit}>
         {/* Email */}
         <div className="mb-4">
@@ -95,27 +131,27 @@ function Register() {
             id="password"
             name="password"
             value={userProfile.password}
-            onChange={handleInputChange} //f0rgott3N!
+            onChange={handleInputChange}
             className="w-full px-4 py-2 border rounded-lg"
             required
           />
           {/* Display password error if any */}
           {passwordError && <p className="text-red-500 mt-1">{passwordError}</p>}
         </div>
-        {/* Login */}
+        {/* Nickname */}
         <div className="mb-4">
           <label htmlFor="nickname" className="block text-sm font-medium text-gray-700">
-            Login
+            Username
           </label>
           <input
-            type="text"
+            type="nickname"
             id="nickname"
             name="nickname"
             value={userProfile.nickname}
             onChange={handleInputChange}
             className="w-full px-4 py-2 border rounded-lg"
             required
-          />
+          />          
         </div>
         {/* First Name */}
         <div className="mb-4">
@@ -150,7 +186,7 @@ function Register() {
         {/* Phone Number */}
         <div className="mb-4">
           <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
-            Telefonní číslo
+            Telefonni Číslo
           </label>
           <input
             type="tel"
@@ -167,7 +203,7 @@ function Register() {
         {/* Confirm Password */}
         <div className="mb-4">
           <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-            Potvrdit heslo
+            Potvrdit Heslo
           </label>
           <input
             type="password"

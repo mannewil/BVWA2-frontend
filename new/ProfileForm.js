@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import InputValidator from './InputValidator'; // Import the utility
 
 function ProfileForm({ user, onSave, onCancel }) {
   const [editMode, setEditMode] = useState(false);
@@ -20,23 +19,54 @@ function ProfileForm({ user, onSave, onCancel }) {
     setEditMode(!editMode);
   };
 
-  const handleSaveProfile = () => {
-    // Save profile logic (e.g., update user data in parent component)
-    onSave(userProfile);
-    setEditMode(false);
+  const handleSaveProfile = async () => {
+    try {
+      const response = await fetch(API_URLS.UPDATE_USER, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`,
+        },
+        body: JSON.stringify(userProfile),
+      });
+
+      if (response.ok) {
+        onSave(userProfile);
+        setEditMode(false);
+      } else {
+        console.error('Error updating user profile:', response.statusText);
+        // Handle error response if needed
+      }
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      // Handle network or other errors if needed
+    }
   };
 
-  const handlePasswordChange = () => {
-    // Password change logic (e.g., validate and update password)
-    if (userProfile.password === passwordData.currentPassword) {
-      if (passwordData.newPassword === passwordData.confirmPassword) {
+  const handlePasswordChange = async () => {
+    try {
+      const response = await fetch(API_URLS.CHANGE_PASSWORD, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        }),
+      });
+
+      if (response.ok) {
         setPasswordError(null);
         onSave({ ...userProfile, password: passwordData.newPassword });
       } else {
-        setPasswordError('Nové a staré heslo nejsou shodné.');
+        const errorData = await response.json();
+        setPasswordError(errorData.message);
       }
-    } else {
-      setPasswordError('Staré heslo je nekorrektní.');
+    } catch (error) {
+      console.error('Error changing password:', error);
+      // Handle network or other errors if needed
     }
   };
 
@@ -50,28 +80,46 @@ function ProfileForm({ user, onSave, onCancel }) {
     setPasswordData({ ...passwordData, [name]: value });
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
-    // Basic validation for image type (you can enhance this as needed)
+
     if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setUserProfile({ ...userProfile, profilePicture: event.target.result });
-        setImageError(null);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const response = await fetch(API_URLS.UPLOAD_IMAGE, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${user.token}`,
+          },
+          body: formData,
+        });
+
+        if (response.ok) {
+          const imageData = await response.json();
+          setUserProfile({ ...userProfile, profilePicture: imageData.imagePath });
+          setImageError(null);
+        } else {
+          const errorData = await response.json();
+          setImageError(errorData.message);
+        }
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        // Handle network or other errors if needed
+      }
     } else {
-      setImageError('Nevalidní obrázek. Prosím vyběrté obrázek.');
+      setImageError('Nespravný format obrázovky.');
     }
   };
 
   return (
     <div className="max-w-md mx-auto mt-10 p-8 bg-white rounded-lg shadow-lg">
-      <h1 className="text-3xl font-semibold mb-4">Vaš profil</h1>
+      <h1 className="text-3xl font-semibold mb-4">Your Profile</h1>
       <div className="grid grid-cols-2 gap-4">
         <div className="mb-4 col-span-2">
           <label htmlFor="profilePicture" className="block text-sm font-medium text-gray-700">
-            Obrázek profilu
+            Obrázovka uživatele
           </label>
           {editMode ? (
             <input
@@ -123,7 +171,7 @@ function ProfileForm({ user, onSave, onCancel }) {
           </div>
           <div className="mb-4">
             <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
-              Telefonní číslo
+              Telefonni Číslo
             </label>
             <input
               type="tel"
@@ -137,7 +185,7 @@ function ProfileForm({ user, onSave, onCancel }) {
           </div>
           <div className="mb-4">
             <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700">
-              Datum narození
+              Datum Narození
             </label>
             <input
               type="date"
@@ -153,17 +201,17 @@ function ProfileForm({ user, onSave, onCancel }) {
       </div>
       {/* Display user profile data */}
       <button onClick={handleEditToggle} className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-full">
-        {editMode ? 'Storno změn' : 'Uložit'}
+        {editMode ? 'Cancel Edit' : 'Edit Profile'}
       </button>
       {editMode && (
         <div className="mt-4">
           <button onClick={handleSaveProfile} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full mr-4">
-            Uložit profil
+            Uložít profil
           </button>
           {/* Password Change Section */}
           <div className="mb-4">
             <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
-              Staré heslo
+              Aktuální heslo
             </label>
             <input
               type="password"
@@ -192,7 +240,7 @@ function ProfileForm({ user, onSave, onCancel }) {
             </div>
             <div className="mb-4">
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Potvrdit heslo
+                Potvrdit nové heslo
               </label>
               <input
                 type="password"
@@ -213,7 +261,7 @@ function ProfileForm({ user, onSave, onCancel }) {
       )}
       {onCancel && editMode && (
         <button onClick={onCancel} className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-full mt-4">
-          Storno
+          Strono
         </button>
       )}
     </div>

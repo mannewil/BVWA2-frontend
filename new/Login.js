@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import API_URLS from './config';
 
 function Login() {
   const navigate = useNavigate();
   
   const [loginData, setLoginData] = useState({
-    nickname: '',
+    username: '',
     password: '',
   });
 
@@ -16,42 +17,50 @@ function Login() {
     setLoginData({ ...loginData, [name]: value });
   };
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-
-    // Get stored users data
-    const storedUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
   
-    // Check login credentials
-    const foundUser = storedUsers.find(
-      (user) => user.nickname === loginData.nickname && user.password === loginData.password
-    );
+    try {
+      const response = await fetch(API_URLS.LOGIN, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(loginData),
+      });
   
-    if (foundUser) {
-      // Successful login
+      if (!response.ok) {
+        // Handle login failure
+        const errorData = await response.json();
+        setLoginError(`Login selhal: ${errorData.message}`);
+        return;
+      }
+  
+      // Login successful
       setLoginError(null);
-      localStorage.setItem('loggedInUser', JSON.stringify(foundUser));
-      console.log('Login success:', loginData.nickname);
+      const userData = await response.json();
+      localStorage.setItem('loggedInUser', JSON.stringify(userData));
+      console.log('Login povedl pro:', loginData.username);
       navigate('/');
       window.location.reload();
-    } else {
-      // Invalid credentials
-      setLoginError('Nevalidní login či heslo');
+    } catch (error) {
+      console.error('Chyba loginu:', error.message);
+      setLoginError('Chyba loginu. Prosím zopakujte to.');
     }
-};
+  };
 
   return (
     <form onSubmit={handleLoginSubmit}>
       {loginError && <div className="text-red-500 mb-4">{loginError}</div>}
       <div className="mb-4">
-        <label htmlFor="nickname" className="block text-sm font-medium text-gray-700">
-        Login
+        <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+        Username
         </label>
         <input
-          type="nickname"
-          id="nickname"
-          name="nickname"
-          value={loginData.nickname}
+          type="username"
+          id="username"
+          name="username"
+          value={loginData.username}
           onChange={handleInputChange}
           className="w-full px-4 py-2 border rounded-lg"
           required

@@ -23,18 +23,18 @@ function Header() {
   const handleDebug = () => {
     // Log the registeredUsers array to the console
     const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-    console.log('Registered Users:', registeredUsers);
+    console.log('Registrované uživatele:', registeredUsers);
   };
 
   return (
     <header className="bg-purple-500 py-4">
       <nav className="container mx-auto flex items-center justify-between">
-        <div className="text-white text-2xl font-bold">Your Logo</div>
+        <div className="text-white text-2xl font-bold">Webovka!</div>
         <ul className="space-x-4 flex items-center">
           {/* Home link always visible */}
           <li>
             <Link to="/" className="text-white hover:text-purple-300">
-              Home
+              Index
             </Link>
           </li>
           {/* Display debug button */}
@@ -53,13 +53,13 @@ function Header() {
                     alt="Profile"
                     className="w-8 h-8 rounded-full object-cover"
                   />
-                  Hi, {user.firstName}
+                  Ahoj, {user.firstName}
                 </Link>
               </li>
-              {loggedInUser.isAdmin && (
+              {loggedInUser.role==="admin" && (
                 <li>
                   <Link to="/admin" className="text-white hover:text-purple-300">
-                    Admin Panel
+                    Panel adminu
                   </Link>
                 </li>
               )}
@@ -68,8 +68,13 @@ function Header() {
                   onClick={handleLogout}
                   className="text-white hover:text-purple-300 focus:outline-none"
                 >
-                  Log Out
+                  Odhlásit
                 </button>
+              </li>
+              <li>
+              <Link to="/messages" className="text-white hover:text-purple-300">
+                    Zpravy
+                  </Link>
               </li>
             </>
           )}
