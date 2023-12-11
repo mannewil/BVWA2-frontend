@@ -9,29 +9,14 @@ import Footer from './Footer';
 import MessageDetail from './MessageDetail';
 import AdminPanel from './AdminPanel';
 
-function App() {
-   // Check if the admin user is already present in registeredUsers
-   const storedUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-   const isAdminPresent = storedUsers.some(user => user.role==='admin');
- 
-   // If the admin user is not present, add them to registeredUsers
-   if (!isAdminPresent) {
-     const adminUser = {
-       email: 'admin@bvwa.net',
-       nickname: 'bruh224',
-       password: 'adm1ni$tratoR',
-       firstName: 'Admin',
-       lastName: 'User',
-       role: 'admin'
-       // Add other properties as needed
-     };
- 
-     storedUsers.push(adminUser);
-     localStorage.setItem('registeredUsers', JSON.stringify(storedUsers));     
-   }
- 
-   const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
-
+let loggedInUser;
+function App() {   
+  // const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
+  console.log(localStorage.getItem('1'));
+  if (localStorage.getItem('1')!=null){
+    if (localStorage.getItem('1').role=='admin'){
+    }
+  }
   return (
     <Router>
       <div>

@@ -3,13 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 
 function Header() {
   const navigate = useNavigate();
-  const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
+  const loggedInUser = JSON.parse(localStorage.getItem('1')) || null;
 
   const [user, setUser] = useState(loggedInUser);
-
-  useEffect(() => {
-    setUser(loggedInUser);
-  }, [loggedInUser]);
 
   const handleLogout = () => {
     // Perform logout logic (e.g., clear user data from localStorage)

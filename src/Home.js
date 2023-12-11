@@ -12,7 +12,7 @@ function Home({ loggedInUser }) {
   // Conditionally render the forms based on whether the user is logged in
   const renderForms = () => {
     if (!loggedInUser) {
-      return showRegisterForm ? <Register /> : <Login />;
+      return showRegisterForm ? <Register /> : <Login loggedInUser={loggedInUser}/>;
     }
     return null;
   };

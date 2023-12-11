@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function Login() {
+function Login({loggedInUser}) {
   const navigate = useNavigate();
   
   const [loginData, setLoginData] = useState({
     nickname: '',
     password: '',
   });
+  
 
   const [loginError, setLoginError] = useState(null);
 
@@ -16,29 +17,30 @@ function Login() {
     setLoginData({ ...loginData, [name]: value });
   };
 
-  const handleLoginSubmit = (e) => {
-    e.preventDefault();
-
-    // Get stored users data
-    const storedUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-  
-    // Check login credentials
-    const foundUser = storedUsers.find(
-      (user) => user.nickname === loginData.nickname && user.password === loginData.password
-    );
-  
-    if (foundUser) {
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();  
       // Successful login
       setLoginError(null);
-      localStorage.setItem('loggedInUser', JSON.stringify(foundUser));
-      console.log('Login success:', loginData.nickname);
-      navigate('/');
-      window.location.reload();
-    } else {
-      // Invalid credentials
+     // Build formData object.
+    let formData = new FormData();
+    formData.append('user', loginData.nickname);
+    formData.append('password', loginData.password);
+    
+    const loginGetData = await fetch("https://127.0.0.1:8443/auth/login",
+    {
+        body: formData,
+        method: "post"
+    });      
+       if (!loginGetData.ok){
       setLoginError('Nevalidní login či heslo');
+      return;
     }
-};
+    const loginGotData = await loginGetData.json();
+    localStorage.setItem('1', JSON.stringify(loginGotData))
+    
+      //navigate('/');
+     // window.location.reload();
+    }
 
   return (
     <form onSubmit={handleLoginSubmit}>

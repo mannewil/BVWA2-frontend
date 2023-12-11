@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ProfileForm from './ProfileForm';
 
-function Profile({ loggedInUser }) {
+async function Profile(loggedInUser) {  
   const [editMode, setEditMode] = useState(false);
   const [userProfile, setUserProfile] = useState({ ...loggedInUser });
   const [originalUserProfile, setOriginalUserProfile] = useState({ ...loggedInUser });
@@ -15,6 +15,18 @@ function Profile({ loggedInUser }) {
     setEditMode(!editMode);
   };
 
+  const profileGetData = await fetch("https://127.0.0.1:8443/user",
+  {
+      method: "get"
+  });      
+     if (!profileGetData.ok){
+   // setLoginError('Nevalidní login či heslo');
+    return;
+  }
+  const profileGotData = await profileGetData.json();
+  console.log(profileGotData)
+
+
   const handleSaveProfile = (updatedUser) => {
     const storedUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
     const updatedUsers = storedUsers.map((u) => (u.email === loggedInUser.email ? updatedUser : u));
@@ -23,6 +35,9 @@ function Profile({ loggedInUser }) {
     setEditMode(false);
     setUserProfile(updatedUser);
   };
+
+
+
 
   const handleCancelEdit = () => {
     setUserProfile(originalUserProfile);

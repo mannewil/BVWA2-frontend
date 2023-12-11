@@ -5,15 +5,13 @@ import InputValidator from './InputValidator'; // Import the utility
 function Register() {
   const navigate = useNavigate();
   const [userProfile, setUserProfile] = useState({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
-    nickname: '',        
-    role: 'user',   
-    phoneNumber: '',    
+    nickname: '',   
+    gender: '',       
+    phone: '',    
     confirmPassword: '',
-    dateOfBirth: null,
-    profilePicture: null,
     password: ''
   });
 
@@ -21,7 +19,7 @@ function Register() {
   const [phoneNumberError, setPhoneNumberError] = useState(null);
   const [emailError, setEmailError] = useState(null);
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
 
     // Validate password
@@ -33,7 +31,7 @@ function Register() {
     }
 
     // Validate phone number
-    if (!InputValidator.isPhoneNumberValid(userProfile.phoneNumber)) {
+    if (!InputValidator.isPhoneNumberValid(userProfile.phone)) {
       setPhoneNumberError('Invalid phone number. Please enter a valid phone number without spaces.');
       return;
     }
@@ -46,18 +44,40 @@ function Register() {
 
     // Registration logic here
     const storedUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-    const isUserExists = storedUsers.some((u) => u.nickname === userProfile.nickname);
+    const isUserExists = await fetch (`https://127.0.0.1:8443/auth/check-username-available?username=${userProfile.nickname}`)
+    const isUserExists_data = await isUserExists.text();
+    
+     console.log(isUserExists_data);
 
-    if (!isUserExists) {
-      storedUsers.push(userProfile);
+    if (isUserExists_data == '1') {    
       localStorage.setItem('registeredUsers', JSON.stringify(storedUsers));    
-      navigate('/'); // Redirect to home/login page after registration
-      window.location.reload();
+       const registerUser = await fetch(`https://127.0.0.1:8443/user`, {
+        method: 'POST',
+        credentials: "include",
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json', //fa@425gWT45w5!3
+        },
+        body: JSON.stringify({
+          first_name: userProfile.first_name,
+          last_name: userProfile.last_name,
+          email: userProfile.email,
+          user: userProfile.nickname,
+          gender: userProfile.gender,
+          phone: userProfile.phone,
+          password: userProfile.password
+        })
+      })
+      const registerUser_data = await registerUser.text()
+      if (registerUser_data == ''){
+       navigate('/'); // Redirect to home/login page after registration
+       window.location.reload();    
     } else {
       // Display error if user already exists
       alert('Uživatel s tímto loginem jíž existuje.');
     }
-  };
+  }};
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -124,9 +144,9 @@ function Register() {
           </label>
           <input
             type="text"
-            id="firstName"
-            name="firstName"
-            value={userProfile.firstName}
+            id="first_name"
+            name="first_name"
+            value={userProfile.first_name}
             onChange={handleInputChange}
             className="w-full px-4 py-2 border rounded-lg"
             required
@@ -139,24 +159,39 @@ function Register() {
           </label>
           <input
             type="text"
-            id="lastName"
-            name="lastName"
-            value={userProfile.lastName}
+            id="last_name"
+            name="last_name"
+            value={userProfile.last_name}
             onChange={handleInputChange}
             className="w-full px-4 py-2 border rounded-lg"
             required
           />
         </div>        
+        {/* Gender */}
+        <div className="mb-4">
+          <label htmlFor="nickname" className="block text-sm font-medium text-gray-700">
+          Pohlaví
+          </label>
+          <input
+            type="text"
+            id="gender"
+            name="gender"
+            value={userProfile.gender}
+            onChange={handleInputChange}
+            className="w-full px-4 py-2 border rounded-lg"
+            required
+          />
+        </div>
         {/* Phone Number */}
         <div className="mb-4">
-          <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
             Telefonní číslo
           </label>
           <input
             type="tel"
-            id="phoneNumber"
-            name="phoneNumber"
-            value={userProfile.phoneNumber}
+            id="phone"
+            name="phone"
+            value={userProfile.phone}
             onChange={handleInputChange}
             className="w-full px-4 py-2 border rounded-lg"
             required
