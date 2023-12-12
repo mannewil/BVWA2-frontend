@@ -27,7 +27,9 @@ function Login({loggedInUser}) {
     formData.append('password', loginData.password);
     
     const loginGetData = await fetch("https://127.0.0.1:8443/auth/login",
-    {
+    {   
+        credentials: "same-origin", // include, same-origin, omit
+        mode: "cors", // no-cors,cors, same-origin
         body: formData,
         method: "post"
     });      
